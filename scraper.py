@@ -211,7 +211,6 @@ def save_to_excel(jobs: list[dict], daily_dir: Path) -> Path:
             "Job Poster Title":       j.get("jobPosterTitle"),
             "Job Poster Profile URL": j.get("jobPosterProfileUrl"),
             "Job Description":        j.get("description"),
-            "Job LinkedIn URL":                j.get("inputUrl")           or j.get("url"),
             "Job LinkedIn URL":       j.get("inputUrl")           or j.get("url"),
             "Job URL":                j.get("applyUrl")           or j.get("url"),
         })
