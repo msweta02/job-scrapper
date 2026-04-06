@@ -1,0 +1,6 @@
+requests
+pandas
+openpyxl
+python-docx
+beautifulsoup4
+scikit-learn

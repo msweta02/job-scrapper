@@ -1,0 +1,6 @@
+{
+  "apify_api_token": "apify_api_*",
+  "groq_api_key": "gsk_*",
+  "exclude_titles":    ["AI Engineer"],
+  "exclude_companies": ["Jobs via Dice","RemoteHunter"]
+}
