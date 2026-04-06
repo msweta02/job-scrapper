@@ -7,9 +7,10 @@ from pathlib import Path
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-ACTOR_ID   = "curious_coder~linkedin-jobs-scraper"
-TOKEN_FILE = "config.json"
-OUTPUT_DIR = Path("output")  # base output folder
+ACTOR_ID      = "curious_coder~linkedin-jobs-scraper"
+TOKEN_FILE    = "config.json"
+MASTER_RESUME = "master_resume.docx"
+OUTPUT_DIR    = Path("output")  # base output folder
 
 # config.json format:
 # {
@@ -211,6 +212,7 @@ def save_to_excel(jobs: list[dict], daily_dir: Path) -> Path:
             "Job Poster Profile URL": j.get("jobPosterProfileUrl"),
             "Job Description":        j.get("description"),
             "Job LinkedIn URL":                j.get("inputUrl")           or j.get("url"),
+            "Job LinkedIn URL":       j.get("inputUrl")           or j.get("url"),
             "Job URL":                j.get("applyUrl")           or j.get("url"),
         })
 
@@ -263,10 +265,26 @@ def main():
     jobs       = deduplicate_jobs(jobs)
     excel_path = save_to_excel(jobs, daily_dir)
 
-    # ── Optionally run resume tailor ─────────────────────────────────────────
+    # ── Run score filter + resume tailor ─────────────────────────────────────
     if excel_path and jobs:
-        from resume_tailor import tailor_resumes
-        tailor_resumes(excel_path, resumes_dir)
+        from score_filter import score_and_filter, save_scored_excel, extract_resume_text
+        resume_text          = extract_resume_text(MASTER_RESUME)
+        passed_df, scored_df = score_and_filter(excel_path, resume_text)
+        save_scored_excel(scored_df, passed_df, daily_dir)
+
+        if not passed_df.empty:
+            passed_path = daily_dir / "passed_jobs.xlsx"
+            passed_df.to_excel(passed_path, index=False)
+            print(f"📋 Passed jobs → {passed_path.resolve()}")
+
+            run_tailor = input(
+                f"\n🤖 Run resume tailor on {len(passed_df)} passed job(s)? (y/n): "
+            ).strip().lower()
+            if run_tailor == "y":
+                from resume_tailor import tailor_resumes
+                tailor_resumes(passed_path, resumes_dir)
+        else:
+            print(f"\n⚠️  No jobs passed the relevance threshold.")
 
 if __name__ == "__main__":
     main()
